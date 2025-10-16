@@ -26,6 +26,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// StringValuer 定义所有字符串值包装类型的共同泛型接口
+type StringValuer[T any] interface {
+	// GetValue 获取包装的原始值
+	GetValue() T
+}
+
 // Bool 增强的布尔类型，支持从字符串形式的JSON/YAML反序列化
 type Bool bool
 
@@ -82,12 +88,19 @@ func (b Bool) MarshalYAML() (interface{}, error) {
 	return bool(b), nil
 }
 
+// GetValue 实现StringValuer[bool]接口，获取包装的原始布尔值
+// 返回值:
+//   - bool: 原始的bool值
+func (b Bool) GetValue() bool {
+	return bool(b)
+}
+
 // Value 实现driver.Valuer接口，用于数据库写入操作
 // 返回值:
 //   - driver.Value: 数据库可接受的值
 //   - error: 转换过程中的错误
 func (b Bool) Value() (driver.Value, error) {
-	return bool(b), nil
+	return b.GetValue(), nil
 }
 
 // Scan 实现sql.Scanner接口，用于数据库读取操作
@@ -223,12 +236,19 @@ func (i Int) MarshalYAML() (interface{}, error) {
 	return int(i), nil
 }
 
+// GetValue 实现StringValuer[int]接口，获取包装的原始整数值
+// 返回值:
+//   - int: 原始的int值
+func (i Int) GetValue() int {
+	return int(i)
+}
+
 // Value 实现driver.Valuer接口，用于数据库写入操作
 // 返回值:
 //   - driver.Value: 数据库可接受的值
 //   - error: 转换过程中的错误
 func (i Int) Value() (driver.Value, error) {
-	return int(i), nil
+	return i.GetValue(), nil
 }
 
 // Scan 实现sql.Scanner接口，用于数据库读取操作
@@ -364,12 +384,21 @@ func (f Float) MarshalYAML() (interface{}, error) {
 	return float64(f), nil
 }
 
+// GetValue 实现StringValuer[float64]接口，获取包装的原始浮点值
+// 返回值:
+//   - float64: 原始的float64值
+func (f Float) GetValue() float64 {
+	return float64(f)
+}
+
+
+
 // Value 实现driver.Valuer接口，用于数据库写入操作
 // 返回值:
 //   - driver.Value: 数据库可接受的值
 //   - error: 转换过程中的错误
 func (f Float) Value() (driver.Value, error) {
-	return float64(f), nil
+	return f.GetValue(), nil
 }
 
 // Scan 实现sql.Scanner接口，用于数据库读取操作
