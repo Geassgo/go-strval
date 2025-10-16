@@ -16,6 +16,7 @@
 package strval
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -79,6 +80,54 @@ func (b *Bool) UnmarshalJSON(data []byte) error {
 //   - error: 序列化过程中的错误
 func (b Bool) MarshalYAML() (interface{}, error) {
 	return bool(b), nil
+}
+
+// Value 实现driver.Valuer接口，用于数据库写入操作
+// 返回值:
+//   - driver.Value: 数据库可接受的值
+//   - error: 转换过程中的错误
+func (b Bool) Value() (driver.Value, error) {
+	return bool(b), nil
+}
+
+// Scan 实现sql.Scanner接口，用于数据库读取操作
+// 参数:
+//   - value: 从数据库读取的值
+// 返回值:
+//   - error: 扫描过程中的错误
+func (b *Bool) Scan(value interface{}) error {
+	if value == nil {
+		*b = false
+		return nil
+	}
+
+	// 尝试直接转换为bool
+	if boolVal, ok := value.(bool); ok {
+		*b = Bool(boolVal)
+		return nil
+	}
+
+	// 尝试从int转换
+	if intVal, ok := value.(int64); ok {
+		*b = Bool(intVal != 0)
+		return nil
+	}
+
+	// 尝试从string转换
+	if strVal, ok := value.(string); ok {
+		boolVal, err := parseBool(strVal)
+		if err != nil {
+			*b = false
+			slog.Error("invalid Bool value from database", "value", strVal, "error", err)
+			return nil
+		}
+		*b = Bool(boolVal)
+		return nil
+	}
+
+	*b = false
+	slog.Error("unsupported Bool value type from database", "type", fmt.Sprintf("%T", value))
+	return nil
 }
 
 // UnmarshalYAML 实现yaml.Unmarshaler接口，支持从YAML布尔值或字符串反序列化为Bool
@@ -174,6 +223,54 @@ func (i Int) MarshalYAML() (interface{}, error) {
 	return int(i), nil
 }
 
+// Value 实现driver.Valuer接口，用于数据库写入操作
+// 返回值:
+//   - driver.Value: 数据库可接受的值
+//   - error: 转换过程中的错误
+func (i Int) Value() (driver.Value, error) {
+	return int(i), nil
+}
+
+// Scan 实现sql.Scanner接口，用于数据库读取操作
+// 参数:
+//   - value: 从数据库读取的值
+// 返回值:
+//   - error: 扫描过程中的错误
+func (i *Int) Scan(value interface{}) error {
+	if value == nil {
+		*i = 0
+		return nil
+	}
+
+	// 尝试直接转换为int64
+	if int64Val, ok := value.(int64); ok {
+		*i = Int(int64Val)
+		return nil
+	}
+
+	// 尝试从float转换
+	if floatVal, ok := value.(float64); ok {
+		*i = Int(floatVal)
+		return nil
+	}
+
+	// 尝试从string转换
+	if strVal, ok := value.(string); ok {
+		intVal, err := strconv.Atoi(strVal)
+		if err != nil {
+			*i = 0
+			slog.Error("invalid Int value from database", "value", strVal, "error", err)
+			return nil
+		}
+		*i = Int(intVal)
+		return nil
+	}
+
+	*i = 0
+	slog.Error("unsupported Int value type from database", "type", fmt.Sprintf("%T", value))
+	return nil
+}
+
 // UnmarshalYAML 实现yaml.Unmarshaler接口，支持从YAML数值或字符串反序列化为Int
 // 参数:
 //   - node: YAML节点
@@ -265,6 +362,54 @@ func (f *Float) UnmarshalJSON(data []byte) error {
 //   - error: 序列化过程中的错误
 func (f Float) MarshalYAML() (interface{}, error) {
 	return float64(f), nil
+}
+
+// Value 实现driver.Valuer接口，用于数据库写入操作
+// 返回值:
+//   - driver.Value: 数据库可接受的值
+//   - error: 转换过程中的错误
+func (f Float) Value() (driver.Value, error) {
+	return float64(f), nil
+}
+
+// Scan 实现sql.Scanner接口，用于数据库读取操作
+// 参数:
+//   - value: 从数据库读取的值
+// 返回值:
+//   - error: 扫描过程中的错误
+func (f *Float) Scan(value interface{}) error {
+	if value == nil {
+		*f = 0
+		return nil
+	}
+
+	// 尝试直接转换为float64
+	if floatVal, ok := value.(float64); ok {
+		*f = Float(floatVal)
+		return nil
+	}
+
+	// 尝试从int转换
+	if intVal, ok := value.(int64); ok {
+		*f = Float(intVal)
+		return nil
+	}
+
+	// 尝试从string转换
+	if strVal, ok := value.(string); ok {
+		floatVal, err := strconv.ParseFloat(strVal, 64)
+		if err != nil {
+			*f = 0
+			slog.Error("invalid Float value from database", "value", strVal, "error", err)
+			return nil
+		}
+		*f = Float(floatVal)
+		return nil
+	}
+
+	*f = 0
+	slog.Error("unsupported Float value type from database", "type", fmt.Sprintf("%T", value))
+	return nil
 }
 
 // UnmarshalYAML 实现yaml.Unmarshaler接口，支持从YAML数值或字符串反序列化为Float
