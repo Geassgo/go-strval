@@ -13,7 +13,7 @@ Go 库提供了增强的基本类型（Bool、Int、Float），支持从字符�
 ## 安装
 
 ```bash
-go get github.com/lengpucheng/go-strval
+go get github.com/geassgo/go-strval
 ```
 
 ## 使用示例
@@ -27,7 +27,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/lengpucheng/go-strval"
+	"github.com/geassgo/go-strval"
 )
 
 type Config struct {
@@ -72,7 +72,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/lengpucheng/go-strval"
+	"github.com/geassgo/go-strval"
 	"gopkg.in/yaml.v3"
 )
 
