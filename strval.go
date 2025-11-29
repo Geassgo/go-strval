@@ -19,9 +19,9 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"strconv"
 	"strings"
-	"log/slog"
 
 	"gopkg.in/yaml.v3"
 )
@@ -46,8 +46,10 @@ func (b Bool) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON 实现json.Unmarshaler接口，支持从JSON布尔值或字符串反序列化为Bool
 // 参数:
 //   - data: JSON数据字节
+//
 // 返回值:
 //   - error: 反序列化过程中的错误
+//
 // 说明:
 //   - 支持直接解析JSON布尔值
 //   - 支持解析字符串形式的布尔值（如"true"、"false"、"yes"、"no"、"1"、"0"）
@@ -106,6 +108,7 @@ func (b Bool) Value() (driver.Value, error) {
 // Scan 实现sql.Scanner接口，用于数据库读取操作
 // 参数:
 //   - value: 从数据库读取的值
+//
 // 返回值:
 //   - error: 扫描过程中的错误
 func (b *Bool) Scan(value interface{}) error {
@@ -146,8 +149,10 @@ func (b *Bool) Scan(value interface{}) error {
 // UnmarshalYAML 实现yaml.Unmarshaler接口，支持从YAML布尔值或字符串反序列化为Bool
 // 参数:
 //   - node: YAML节点
+//
 // 返回值:
 //   - error: 反序列化过程中的错误
+//
 // 说明:
 //   - 支持直接解析YAML布尔值
 //   - 支持解析字符串形式的布尔值
@@ -194,8 +199,10 @@ func (i Int) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON 实现json.Unmarshaler接口，支持从JSON数值或字符串反序列化为Int
 // 参数:
 //   - data: JSON数据字节
+//
 // 返回值:
 //   - error: 反序列化过程中的错误
+//
 // 说明:
 //   - 支持直接解析JSON数值
 //   - 支持解析字符串形式的整数值
@@ -248,12 +255,13 @@ func (i Int) GetValue() int {
 //   - driver.Value: 数据库可接受的值
 //   - error: 转换过程中的错误
 func (i Int) Value() (driver.Value, error) {
-	return i.GetValue(), nil
+	return int64(i.GetValue()), nil
 }
 
 // Scan 实现sql.Scanner接口，用于数据库读取操作
 // 参数:
 //   - value: 从数据库读取的值
+//
 // 返回值:
 //   - error: 扫描过程中的错误
 func (i *Int) Scan(value interface{}) error {
@@ -294,8 +302,10 @@ func (i *Int) Scan(value interface{}) error {
 // UnmarshalYAML 实现yaml.Unmarshaler接口，支持从YAML数值或字符串反序列化为Int
 // 参数:
 //   - node: YAML节点
+//
 // 返回值:
 //   - error: 反序列化过程中的错误
+//
 // 说明:
 //   - 支持直接解析YAML数值
 //   - 支持解析字符串形式的整数值
@@ -342,8 +352,10 @@ func (f Float) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON 实现json.Unmarshaler接口，支持从JSON数值或字符串反序列化为Float
 // 参数:
 //   - data: JSON数据字节
+//
 // 返回值:
 //   - error: 反序列化过程中的错误
+//
 // 说明:
 //   - 支持直接解析JSON数值
 //   - 支持解析字符串形式的浮点数值
@@ -391,8 +403,6 @@ func (f Float) GetValue() float64 {
 	return float64(f)
 }
 
-
-
 // Value 实现driver.Valuer接口，用于数据库写入操作
 // 返回值:
 //   - driver.Value: 数据库可接受的值
@@ -404,6 +414,7 @@ func (f Float) Value() (driver.Value, error) {
 // Scan 实现sql.Scanner接口，用于数据库读取操作
 // 参数:
 //   - value: 从数据库读取的值
+//
 // 返回值:
 //   - error: 扫描过程中的错误
 func (f *Float) Scan(value interface{}) error {
@@ -444,8 +455,10 @@ func (f *Float) Scan(value interface{}) error {
 // UnmarshalYAML 实现yaml.Unmarshaler接口，支持从YAML数值或字符串反序列化为Float
 // 参数:
 //   - node: YAML节点
+//
 // 返回值:
 //   - error: 反序列化过程中的错误
+//
 // 说明:
 //   - 支持直接解析YAML数值
 //   - 支持解析字符串形式的浮点数值
@@ -481,12 +494,15 @@ func (f *Float) UnmarshalYAML(node *yaml.Node) error {
 // parseBool 解析字符串形式的布尔值
 // 参数:
 //   - s: 输入字符串
+//
 // 返回值:
 //   - bool: 解析后的布尔值
 //   - error: 解析过程中的错误
+//
 // 支持的值:
 //   - 真值: "true", "yes", "y", "1"
 //   - 假值: "false", "no", "n", "0"
+//
 // 所有值不区分大小写，会自动去除前后空格
 func parseBool(s string) (bool, error) {
 	s = strings.ToLower(strings.TrimSpace(s))
@@ -498,4 +514,159 @@ func parseBool(s string) (bool, error) {
 	default:
 		return false, fmt.Errorf("cannot parse '%s' as bool", s)
 	}
+}
+
+// String 增强的字符串类型，确保序列化后总是字符串格式
+type String string
+
+// MarshalJSON 实现json.Marshaler接口，将String序列化为JSON字符串
+// 返回值:
+//   - []byte: 序列化后的JSON字节
+//   - error: 序列化过程中的错误
+//
+// 说明：确保序列化后总是字符串格式，即使原始值是数值等其他类型
+func (s String) MarshalJSON() ([]byte, error) {
+	return json.Marshal(string(s))
+}
+
+// UnmarshalJSON 实现json.Unmarshaler接口，支持从JSON字符串或其他类型反序列化为String
+// 参数:
+//   - data: JSON数据字节
+//
+// 返回值:
+//   - error: 反序列化过程中的错误
+//
+// 说明：支持从字符串、数值、布尔值等类型反序列化为字符串
+func (s *String) UnmarshalJSON(data []byte) error {
+	// 尝试直接解析为string
+	var strVal string
+	if err := json.Unmarshal(data, &strVal); err == nil {
+		*s = String(strVal)
+		return nil
+	}
+
+	// 尝试解析为int
+	var intVal int
+	if err := json.Unmarshal(data, &intVal); err == nil {
+		*s = String(strconv.Itoa(intVal))
+		return nil
+	}
+
+	// 尝试解析为float64
+	var floatVal float64
+	if err := json.Unmarshal(data, &floatVal); err == nil {
+		*s = String(strconv.FormatFloat(floatVal, 'g', -1, 64))
+		return nil
+	}
+
+	// 尝试解析为bool
+	var boolVal bool
+	if err := json.Unmarshal(data, &boolVal); err == nil {
+		*s = String(strconv.FormatBool(boolVal))
+		return nil
+	}
+
+	*s = ""
+	slog.Error("invalid String value", "error", "cannot parse to string")
+	return nil
+}
+
+// MarshalYAML 实现yaml.Marshaler接口，将String序列化为YAML字符串
+// 返回值:
+//   - interface{}: 序列化后的值
+//   - error: 序列化过程中的错误
+func (s String) MarshalYAML() (interface{}, error) {
+	return string(s), nil
+}
+
+// GetValue 实现StringValuer[string]接口，获取包装的原始字符串值
+// 返回值:
+//   - string: 原始的string值
+func (s String) GetValue() string {
+	return string(s)
+}
+
+// Value 实现driver.Valuer接口，用于数据库写入操作
+// 返回值:
+//   - driver.Value: 数据库可接受的值
+//   - error: 转换过程中的错误
+func (s String) Value() (driver.Value, error) {
+	return s.GetValue(), nil
+}
+
+// Scan 实现sql.Scanner接口，用于数据库读取操作
+// 参数:
+//   - value: 从数据库读取的值
+//
+// 返回值:
+//   - error: 扫描过程中的错误
+func (s *String) Scan(value interface{}) error {
+	if value == nil {
+		*s = ""
+		return nil
+	}
+
+	// 尝试直接转换为string
+	if strVal, ok := value.(string); ok {
+		*s = String(strVal)
+		return nil
+	}
+
+	// 尝试从其他类型转换为string
+	switch v := value.(type) {
+	case int64:
+		*s = String(strconv.FormatInt(v, 10))
+		return nil
+	case float64:
+		*s = String(strconv.FormatFloat(v, 'g', -1, 64))
+		return nil
+	case bool:
+		*s = String(strconv.FormatBool(v))
+		return nil
+	default:
+		*s = String(fmt.Sprintf("%v", v))
+		slog.Warn("converting non-standard type to String", "type", fmt.Sprintf("%T", v))
+	}
+
+	return nil
+}
+
+// UnmarshalYAML 实现yaml.Unmarshaler接口，支持从YAML字符串或其他类型反序列化为String
+// 参数:
+//   - node: YAML节点
+//
+// 返回值:
+//   - error: 反序列化过程中的错误
+func (s *String) UnmarshalYAML(node *yaml.Node) error {
+	// 尝试直接解析为string
+	var strVal string
+	if err := node.Decode(&strVal); err == nil {
+		*s = String(strVal)
+		return nil
+	}
+
+	// 尝试解析为int
+	var intVal int
+	if err := node.Decode(&intVal); err == nil {
+		*s = String(strconv.Itoa(intVal))
+		return nil
+	}
+
+	// 尝试解析为float64
+	var floatVal float64
+	if err := node.Decode(&floatVal); err == nil {
+		*s = String(strconv.FormatFloat(floatVal, 'g', -1, 64))
+		return nil
+	}
+
+	// 尝试解析为bool
+	var boolVal bool
+	if err := node.Decode(&boolVal); err == nil {
+		*s = String(strconv.FormatBool(boolVal))
+		return nil
+	}
+
+	*s = ""
+	slog.Error("invalid String value in YAML", "error", "cannot parse to string")
+	return nil
 }
