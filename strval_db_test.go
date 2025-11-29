@@ -84,7 +84,7 @@ func TestIntDatabase(t *testing.T) {
 	if err != nil {
 		t.Errorf("Int.Value() returned error: %v", err)
 	}
-	if intVal, ok := val.(int); !ok || intVal != 42 {
+	if intVal, ok := val.(int64); !ok || intVal != 42 {
 		t.Errorf("Int.Value() returned %v, want 42", val)
 	}
 

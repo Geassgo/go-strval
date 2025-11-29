@@ -7,8 +7,10 @@ Go 库提供了增强的基本类型（Bool、Int、Float），支持从字符�
 - **Bool 类型**：支持从字符串形式（如 "true", "false", "yes", "no", "1", "0"）反序列化为 bool 值
 - **Int 类型**：支持从字符串形式反序列化为 int 值
 - **Float 类型**：支持从字符串形式反序列化为 float64 值
+- **String 类型**：支持从多种类型（字符串、数值、布尔值）转换为字符串
 - **优雅处理错误**：当格式异常时，会将值设置为零值，并使用 slog 记录详细错误信息
 - **标准序列化**：序列化为 JSON/YAML 时输出原始类型值，而不是字符串
+- **数据库支持**：实现了 `driver.Valuer` 和 `sql.Scanner` 接口，支持与 GORM 等 ORM 框架配合使用
 
 ## 安装
 
@@ -99,6 +101,62 @@ timeout: "5.25"
 	fmt.Printf("Enabled: %v\n", bool(config.Enabled))   // false
 	fmt.Printf("MaxCount: %v\n", int(config.MaxCount))   // 200
 	fmt.Printf("Timeout: %v\n", float64(config.Timeout)) // 5.25
+}
+```
+
+### GORM 支持
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/lengpucheng/go-strval"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+)
+
+// 定义模型
+type User struct {
+	ID     uint   `gorm:"primaryKey"`
+	Name   string `gorm:"size:255"`
+	Active strval.Bool   `gorm:"column:active"`
+	Age    strval.Int    `gorm:"column:age"`
+	Score  strval.Float  `gorm:"column:score"`
+	Status strval.String `gorm:"column:status"`
+}
+
+func main() {
+	// 连接数据库
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	if err != nil {
+		panic("Failed to connect database")
+	}
+
+	// 自动迁移表结构
+	db.AutoMigrate(&User{})
+
+	// 创建记录
+	user := User{
+		Name:   "John Doe",
+		Active: strval.Bool(true),
+		Age:    strval.Int(30),
+		Score:  strval.Float(95.5),
+		Status: strval.String("active"),
+	}
+	db.Create(&user)
+
+	// 查询记录
+	var foundUser User
+	db.First(&foundUser, user.ID)
+
+	// 输出结果
+	fmt.Printf("User: %+v\n", foundUser)
+	fmt.Printf("Active: %v\n", bool(foundUser.Active))
+	fmt.Printf("Age: %v\n", int(foundUser.Age))
+	fmt.Printf("Score: %v\n", float64(foundUser.Score))
+	fmt.Printf("Status: %v\n", string(foundUser.Status))
 }
 ```
 
