@@ -15,7 +15,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/lengpucheng/go-strval"
+	"github.com/geassgo/go-strval"
 	"gopkg.in/yaml.v3"
 )
 
@@ -122,13 +122,13 @@ func differentBoolExample() {
 
 	// 测试各种布尔值形式
 	testValues := []string{
-		`{"value": true}`,        // 直接布尔值
-		`{"value": "true"}`,    // 字符串true
-		`{"value": "yes"}`,     // 字符串yes
-		`{"value": "1"}`,       // 字符串1
-		`{"value": "false"}`,   // 字符串false
-		`{"value": "no"}`,      // 字符串no
-		`{"value": "0"}`,       // 字符串0
+		`{"value": true}`,    // 直接布尔值
+		`{"value": "true"}`,  // 字符串true
+		`{"value": "yes"}`,   // 字符串yes
+		`{"value": "1"}`,     // 字符串1
+		`{"value": "false"}`, // 字符串false
+		`{"value": "no"}`,    // 字符串no
+		`{"value": "0"}`,     // 字符串0
 	}
 
 	for _, test := range testValues {

@@ -1,4 +1,4 @@
-module github.com/lengpucheng/go-strval
+module github.com/geassgo/go-strval
 
 go 1.23
 
